@@ -4,7 +4,11 @@ try:
 except:
     from django.utils import simplejson
     
-from django.db.models import get_model
+try:
+    from django.apps import apps
+except ImportError:  # django < 1.7
+    from django.db import models as apps
+    
 import stripe
 from zebra.conf import options
 from zebra.signals import *
@@ -17,7 +21,7 @@ stripe.api_key = options.STRIPE_SECRET
 
 def _try_to_get_customer_from_customer_id(stripe_customer_id):
     if options.ZEBRA_CUSTOMER_MODEL:
-        m = get_model(*options.ZEBRA_CUSTOMER_MODEL.split('.'))
+        m = appd.get_model(*options.ZEBRA_CUSTOMER_MODEL.split('.'))
         try:
             return m.objects.get(stripe_customer_id=stripe_customer_id)
         except:
